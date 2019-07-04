@@ -97,7 +97,10 @@ class Ldap extends Model
         $filterQuery = $settings->ldap_auth_filter_query . $username;
 
 
+
         if (!$ldapbind = @ldap_bind($connection, $userDn, $password)) {
+            ldap_get_option($connection, 0x0032, $extended_error);
+            throw new Exception('bind result ret false'.$extended_error);
             if(!$ldapbind = Ldap::bindAdminToLdap($connection)){
                     return false;
             }
@@ -137,12 +140,15 @@ class Ldap extends Model
         $ldap_username     = Setting::getSettings()->ldap_uname;
 
         // Lets return some nicer messages for users who donked their app key, and disable LDAP
+        $ldap_pass    = \Crypt::decrypt(Setting::getSettings()->ldap_pword);
+	/**
         try {
             $ldap_pass    = \Crypt::decrypt(Setting::getSettings()->ldap_pword);
         } catch (Exception $e) {
 
             throw new Exception('Your app key has changed! Could not decrypt LDAP password using your current app key, so LDAP authentication has been disabled. Login with a local account, update the LDAP password and re-enable it in Admin > Settings.');
         }
+	*/
 
 
         if (!$ldapbind = @ldap_bind($connection, $ldap_username, $ldap_pass)) {
